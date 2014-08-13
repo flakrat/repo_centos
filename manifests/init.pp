@@ -6,7 +6,7 @@
 #
 # $repourl::                       The base repo URL, if not specified defaults to the
 #                                  CentOS Mirror
-#                                  
+#
 # $enable_base::                   Enable the CentOS Base Repo
 #                                  type:boolean
 #
@@ -47,6 +47,8 @@
 #
 class repo_centos (
     $repourl                     = $repo_centos::params::repourl,
+    $debug_repourl               = $repo_centos::params::debug_repourl,
+    $source_repourl              = $repo_centos::params::source_repourl,
     $enable_base                 = $repo_centos::params::enable_base,
     $enable_contrib              = $repo_centos::params::enable_contrib,
     $enable_cr                   = $repo_centos::params::enable_cr,
@@ -54,9 +56,13 @@ class repo_centos (
     $enable_plus                 = $repo_centos::params::enable_plus,
     $enable_scl                  = $repo_centos::params::enable_scl,
     $enable_updates              = $repo_centos::params::enable_updates,
+    $enable_source               = $repo_centos::params::enable_source,
+    $enable_debug                = $repo_centos::params::enable_debug,
   ) inherits repo_centos::params {
 
   validate_string($repourl)
+  validate_string($debug_repourl)
+  validate_string($source_repourl)
   validate_bool($enable_base)
   validate_bool($enable_contrib)
   validate_bool($enable_cr)
@@ -64,8 +70,20 @@ class repo_centos (
   validate_bool($enable_plus)
   validate_bool($enable_scl)
   validate_bool($enable_updates)
-  
+  validate_bool($enable_source)
+  validate_bool($enable_debug)
+
   if $::operatingsystem == 'CentOS' {
+    $releasever = $repo_centos::params::releasever
+
+    stage { 'repo_centos_clean':
+      before  => Stage['main'],
+    }
+
+    class { 'repo_centos::clean':
+      stage => repo_centos_clean,
+    }
+
     include repo_centos::base
     include repo_centos::contrib
     include repo_centos::cr
@@ -73,22 +91,46 @@ class repo_centos (
     include repo_centos::plus
     include repo_centos::scl
     include repo_centos::updates
-    
-    file { "/etc/yum.repos.d/centos${::os_maj_version}.repo": ensure => absent, }
-	  file { "/etc/yum.repos.d/CentOS-Base.repo": ensure => absent, }
-	  file { "/etc/yum.repos.d/CentOS-Debuginfo.repo": ensure => absent, }
-	  file { "/etc/yum.repos.d/CentOS-Media.repo": ensure => absent, }
-	  
-    repo_centos::rpm_gpg_key{ "RPM-GPG-KEY-CentOS-${::os_maj_version}":
-      path => "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-${::os_maj_version}",
+    include repo_centos::source
+    include repo_centos::debug
+
+    anchor { 'repo_centos::start': }->
+    Class['repo_centos::base']->
+    Class['repo_centos::contrib']->
+    Class['repo_centos::cr']->
+    Class['repo_centos::extras']->
+    Class['repo_centos::plus']->
+    Class['repo_centos::scl']->
+    Class['repo_centos::updates']->
+    Class['repo_centos::source']->
+    Class['repo_centos::debug']->
+    anchor { 'repo_centos::end': }->
+    Package<| |>
+
+    gpg_key { "RPM-GPG-KEY-CentOS-${releasever}":
+      path    => "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-${releasever}",
+      before  => Anchor['repo_centos::start'],
     }
 
-    file { "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-${::os_maj_version}":
+    gpg_key { "RPM-GPG-KEY-CentOS-Debug-${releasever}":
+      path    => "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Debug-${releasever}",
+      before  => Anchor['repo_centos::start'],
+    }
+
+    file { "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-${releasever}":
       ensure => present,
       owner  => 0,
       group  => 0,
       mode   => '0644',
-      source => "puppet:///modules/repo_centos/RPM-GPG-KEY-CentOS-${::os_maj_version}",
+      source => "puppet:///modules/repo_centos/RPM-GPG-KEY-CentOS-${releasever}",
+    }
+
+    file { "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Debug-${releasever}":
+      ensure => present,
+      owner  => 0,
+      group  => 0,
+      mode   => '0644',
+      source => "puppet:///modules/repo_centos/RPM-GPG-KEY-CentOS-Debug-${releasever}",
     }
 
   } else {
