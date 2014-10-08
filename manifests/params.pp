@@ -7,6 +7,7 @@ class repo_centos::params {
   $enable_contrib              = false
   $enable_cr                   = false
   $enable_extras               = true
+  $enable_fasttrack            = false
   $enable_plus                 = false
   $enable_scl                  = false
   $enable_updates              = true

@@ -19,6 +19,9 @@
 # $enable_extras::                 Enable the CentOS Extras Repo
 #                                  type:boolean
 #
+# $enable_fasttrack::              Enable the CentOS Fasttrack Repo
+#                                  type:boolean
+#
 # $enable_plus::                   Enable the CentOS Plus Repo
 #                                  type:boolean
 #
@@ -51,6 +54,7 @@ class repo_centos (
     $enable_contrib              = $repo_centos::params::enable_contrib,
     $enable_cr                   = $repo_centos::params::enable_cr,
     $enable_extras               = $repo_centos::params::enable_extras,
+    $enable_fasttrack            = $repo_centos::params::enable_fasttrack,
     $enable_plus                 = $repo_centos::params::enable_plus,
     $enable_scl                  = $repo_centos::params::enable_scl,
     $enable_updates              = $repo_centos::params::enable_updates,
@@ -61,6 +65,7 @@ class repo_centos (
   validate_bool($enable_contrib)
   validate_bool($enable_cr)
   validate_bool($enable_extras)
+  validate_bool($enable_fasttrack)
   validate_bool($enable_plus)
   validate_bool($enable_scl)
   validate_bool($enable_updates)
@@ -70,14 +75,16 @@ class repo_centos (
     include repo_centos::contrib
     include repo_centos::cr
     include repo_centos::extras
+    include repo_centos::fasttrack
     include repo_centos::plus
     include repo_centos::scl
     include repo_centos::updates
     
     file { "/etc/yum.repos.d/centos${::os_maj_version}.repo": ensure => absent, }
 	  file { "/etc/yum.repos.d/CentOS-Base.repo": ensure => absent, }
-	  file { "/etc/yum.repos.d/CentOS-Debuginfo.repo": ensure => absent, }
-	  file { "/etc/yum.repos.d/CentOS-Media.repo": ensure => absent, }
+	  file { "/etc/yum.repos.d/CentOS-CR.repo": ensure => absent, }
+	  file { "/etc/yum.repos.d/CentOS-fasttrack.repo": ensure => absent, }
+	  file { "/etc/yum.repos.d/CentOS-SCL.repo": ensure => absent, }
 	  
     repo_centos::rpm_gpg_key{ "RPM-GPG-KEY-CentOS-${::os_maj_version}":
       path => "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-${::os_maj_version}",

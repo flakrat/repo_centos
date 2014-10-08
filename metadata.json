@@ -11,12 +11,17 @@
   "operatingsystem_support": [
     {
       "operatingsystem": "CentOS",
-    },
+      "operatingsystemrelease": [
+        "5",
+        "6",
+        "7"
+      ]
+    }
   ],
   "project_page": "https://github.com/flakrat/repo_centos",
   "requirements": [],
   "source": "https://github.com/flakrat/repo_centos.git",
-  "summary": "Configures the CentOS 5 or 6 Yum repository config to point to a local mirror",
+  "summary": "Configures the CentOS 5, 6 or 7 Yum repository config to point to a local mirror",
   "tags": [],
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

@@ -16,11 +16,15 @@ The following Repos will be setup and enabled by default:
   * centos-extras
   * centos-updates
 
-Other repositories that will setup but disabled
+Other repositories that will be setup but disabled
   * centos-contrib
   * centos-cr
+  * centos-fasttrack
   * centos-plus
-  * scl
+  * centos-scl
+
+## New in 1.0.2
+  * Added CentOS Fasttrack repository
 
 ## New in 1.0.1
   * Added CentOS 7 GPG key
